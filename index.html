@@ -2,7 +2,7 @@
 <style>
 html,body{margin:0;height:100%;background:#070a12;overflow:hidden;font-family:system-ui,Segoe UI,Roboto,Arial;color:#e8ecff}
 #c{display:block;width:100%;height:100%;touch-action:none}
-#ui{position:fixed;left:12px;top:12px;display:flex;gap:10px;align-items:flex-start;user-select:none}
+#ui{position:fixed;left:12px;top:12px;display:flex;gap:10px;align-items:flex-start;user-select:none;z-index:5}
 #ui .panel{backdrop-filter:blur(8px);background:rgba(8,12,26,.72);border:1px solid rgba(140,160,255,.25);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.45);padding:10px 12px}
 #ui input{width:140px;background:rgba(255,255,255,.06);border:1px solid rgba(140,160,255,.22);border-radius:10px;color:#e8ecff;padding:8px 10px;outline:none}
 #ui b{font-weight:700}
@@ -10,274 +10,287 @@ html,body{margin:0;height:100%;background:#070a12;overflow:hidden;font-family:sy
 #ui .k{display:flex;gap:8px;align-items:center;font-size:12px;opacity:.95}
 .sw{width:10px;height:10px;border-radius:3px;box-shadow:0 0 0 1px rgba(255,255,255,.18),0 6px 16px rgba(0,0,0,.5) inset}
 .btn{cursor:pointer;background:linear-gradient(180deg,rgba(110,140,255,.35),rgba(70,90,190,.18));border:1px solid rgba(140,160,255,.28);color:#e8ecff;border-radius:10px;padding:8px 10px;font-weight:700}
-.btn:active{transform:translateY(1px)}
-#hint{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none}
-#hint .box{display:inline-block;max-width:min(520px,92vw);backdrop-filter:blur(10px);background:rgba(8,12,26,.78);border:1px solid rgba(140,160,255,.3);border-radius:18px;padding:14px 16px;box-shadow:0 14px 60px rgba(0,0,0,.55)}
-#hint h1{margin:0 0 6px;font-size:18px;letter-spacing:.2px}
-#hint p{margin:0;font-size:13px;opacity:.9;line-height:1.35}
+.btn:active{transform:translateY(1px)}@media (orientation:landscape) and (min-width:900px){#ui{left:auto;right:16px;top:50%;transform:translateY(-50%)}#ui .panel{min-width:320px;max-width:440px;width:min(440px,38vw)}#ui .row:not(#counts){flex-direction:column;align-items:stretch}
+#ui input{width:100%}#ui .btn{width:100%}#ui .pbtn{width:auto}#ui .k{justify-content:space-between}#ui #counts{flex-direction:row;align-items:center;flex-wrap:nowrap;justify-content:space-between}
+}
+
+#sides{position:fixed;left:50%;top:12px;transform:translateX(-50%);display:flex;gap:10px;pointer-events:none;z-index:4}
+#sides span{width:26px;height:26px;border-radius:10px;display:grid;place-items:center;font-weight:800;font-size:12px;letter-spacing:.2px;
+background:rgba(255,255,255,.05);border:1px solid rgba(140,160,255,.18);box-shadow:0 10px 26px rgba(0,0,0,.35);pointer-events:auto;cursor:pointer}
+#sides .on{background:rgba(110,140,255,.28);border-color:rgba(170,190,255,.45);box-shadow:0 12px 34px rgba(90,120,255,.22),0 10px 26px rgba(0,0,0,.35)}
+#hint,#pause{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;z-index:6}
+#pause{z-index:7;display:none}
+#hint .box,#pause .box{display:inline-block;max-width:min(520px,92vw);backdrop-filter:blur(10px);background:rgba(8,12,26,.78);border:1px solid rgba(140,160,255,.3);border-radius:18px;padding:14px 16px;box-shadow:0 14px 60px rgba(0,0,0,.55);pointer-events:auto}
+#hint h1,#pause h1{margin:0 0 6px;font-size:18px;letter-spacing:.2px}
+#hint p,#pause p{margin:0;font-size:13px;opacity:.9;line-height:1.35}
+.cc{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;text-align:center;font-weight:900;font-size:11px;line-height:1.05;color:rgba(7,10,18,.92);text-shadow:0 1px 0 rgba(255,255,255,.35),0 2px 10px rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.26);box-shadow:0 12px 30px rgba(0,0,0,.42),inset 0 10px 18px rgba(255,255,255,.22),inset 0 -14px 18px rgba(0,0,0,.35)}
+.cc .s{font-weight:800;font-size:10px;opacity:.95}
+.pbtn{padding:6px 8px;border-radius:10px}
 </style></head><body>
 <canvas id=c></canvas>
 
-<div id=ui>
-  <div class=panel>
-    <div class=row style="margin-bottom:8px">
-      <input id=name placeholder="Player name" value="Player">
-      <button class=btn id=save>Save PNG</button>
-    </div>
-    <div class=row style="gap:14px;margin-bottom:8px">
-      <div class=k><b>Time:</b><span id=time>00:00.0</span></div>
-      <div class=k><b>Moves:</b><span id=moves>0</span></div>
-    </div>
-    <div class=row id=counts style="gap:10px"></div>
+<div id=sides><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span></div>
+
+<div id=ui><div class=panel>
+  <div class=row style="margin-bottom:8px">
+    <input id=name placeholder="Player name" value="Player">
+    <button class=btn id=save>Save PNG</button>
+    <button class=btn id=shuf title="Shuffle">🔄</button>
+    <button class=btn id=redo title="Start over">🧹</button>
   </div>
-</div>
+  <div class=row style="gap:14px;margin-bottom:8px">
+    <div class=k><b>Time:</b><span id=time>00:00.0</span></div>
+    <div class=k><b>Moves:</b><span id=moves>0</span><button class="btn pbtn" id=pauseB title="Pause">⏸️</button></div>
+  </div>
+  <div class=row id=counts style="gap:10px"></div>
+</div></div>
 
 <div id=hint><div class=box>
   <h1 id=hintT>Tap to start</h1>
-  <p id=hintS>Drag to spin. When a face is square-on it will lock.</p>
+  <p id=hintS>Drag to spin. When a face is square-on it will highlight.</p><div style="margin-top:10px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class=btn id=start>Start</button><button class=btn id=newg style="display:none">New Game</button></div>
+</div></div>
+
+<div id=pause><div class=box>
+  <h1>Paused</h1>
+  <p>Timer and controls are paused.</p><div style="margin-top:10px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class=btn id=res>Resume</button></div>
 </div></div>
 
 <script>
 const c=document.getElementById('c'),x=c.getContext('2d');
 const nameEl=document.getElementById('name'),timeEl=document.getElementById('time'),movesEl=document.getElementById('moves');
-const countsEl=document.getElementById('counts'),hint=document.getElementById('hint'),hintT=document.getElementById('hintT'),hintS=document.getElementById('hintS');
-const HEX=['#fffbf2','#ffd400','#00d1ff','#00e676','#ff3d5a','#ff8a00'],LBL=['W','Y','B','G','R','O'];
+const countsEl=document.getElementById('counts'),hint=document.getElementById('hint'),hintT=document.getElementById('hintT'),hintS=document.getElementById('hintS'),startBtn=document.getElementById('start'),newBtn=document.getElementById('newg'),sidesBox=document.getElementById('sides');
+const pauseBox=document.getElementById('pause'),resBtn=document.getElementById('res'),pauseBtn=document.getElementById('pauseB');
+const sides=[...document.querySelectorAll('#sides span')];
+const RND=()=>'#'+[0,0,0].map(()=>((Math.random()*156+80)|0).toString(16).padStart(2,'0')).join('');
+const HEX=['#fffbf2','#ffd400','#00d1ff','#00e676','#ff3d5a','#ff8a00']; // edit side colors here
+HEX[0]=RND(); // one random side (index 0)
+const FX={lin:1,rad:2};
+const BG=i=>i==FX.lin?`linear-gradient(135deg,${HEX[i]},${HEX[4]},${HEX[0]})`:i==FX.rad?`radial-gradient(circle at 30% 30%,${HEX[i]},${HEX[5]})`:HEX[i];
+const LBL=['W','Y','B','G','R','O'];
+startBtn&& (startBtn.textContent='Start'); newBtn&& (newBtn.textContent='New Game');
+const SF=[3,4,5,6,1,2]; // side number per face index (+X,-X,+Y,-Y,+Z,-Z)
 
-let W=0,H=0,D=1,f=700,dist=7;
+let W=0,H=0,D=1,f=700,dist=7,curSide=-1,sup=0;
 function resize(){
-  D=window.devicePixelRatio||1;
-  W=innerWidth;H=innerHeight;
-  c.width=W*D;c.height=H*D;
-  x.setTransform(D,0,0,D,0,0);
-  f=Math.min(W,H)*1.1;
+  D=window.devicePixelRatio||1; W=innerWidth;H=innerHeight;
+  c.width=W*D;c.height=H*D; x.setTransform(D,0,0,D,0,0);
+  const s=Math.min(W,H); f=s*1.55;
+  if(sidesBox){const y=Math.max(12,(H/2 - s*0.34)|0); sidesBox.style.top=y+'px';}
 }
 addEventListener('resize',resize,{passive:1});resize();
 
+
 const V=(x,y,z)=>[x,y,z], add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]], sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],
-mul=(a,s)=>[a[0]*s,a[1]*s,a[2]*s], dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],
-cr=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
-const rotA=(p,a,t)=>{ // Rodrigues
-  let [x,y,z]=p,[u,v,w]=a,ct=Math.cos(t),st=Math.sin(t),d=u*x+v*y+w*z;
-  return [
-    u*d*(1-ct)+x*ct+(-w*y+v*z)*st,
-    v*d*(1-ct)+y*ct+( w*x-u*z)*st,
-    w*d*(1-ct)+z*ct+(-v*x+u*y)*st
-  ];
+mul=(a,s)=>[a[0]*s,a[1]*s,a[2]*s], dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const rotA=(p,a,t)=>{ // Rodrigues (normalize axis to avoid drift/warp)
+  let [x,y,z]=p,[u,v,w]=a,L=Math.hypot(u,v,w)||1; u/=L;v/=L;w/=L;
+  let ct=Math.cos(t),st=Math.sin(t),d=u*x+v*y+w*z;
+  return [u*d*(1-ct)+x*ct+(-w*y+v*z)*st, v*d*(1-ct)+y*ct+( w*x-u*z)*st, w*d*(1-ct)+z*ct+(-v*x+u*y)*st];
 };
 
 let yaw=0,pitch=0,ty=0,tp=0;
-const cam=p=>{ // yaw then pitch
-  let q=rotA(p,[0,1,0],yaw);
-  return rotA(q,[1,0,0],pitch);
-};
-const proj=p=>{
-  let q=cam(p);
-  let z=q[2]+dist, s=f/z;
-  return [W/2+q[0]*s, H/2-q[1]*s, z];
-};
+const cam=p=>rotA(rotA(p,[0,1,0],yaw),[1,0,0],pitch);
+const proj=p=>{let q=cam(p),z=q[2]+dist,s=f/z; return [W/2+q[0]*s,H/2-q[1]*s,z];};
 
-const shade=(ci,bright)=>{ // ci: 0..5
-  let h=HEX[ci];
-  let r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);
-  let k=Math.max(.25,Math.min(1,bright));
-  r=(r*k)|0; g=(g*k)|0; b=(b*k)|0;
-  return `rgb(${r},${g},${b})`;
-};
+const shade=(ci,b)=>{let h=HEX[ci],r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),bb=parseInt(h.slice(5,7),16);
+  b=Math.max(.25,Math.min(1,b)); return `rgb(${(r*b)|0},${(g*b)|0},${(bb*b)|0})`;};
+const pshade=b=>{b=Math.max(.2,Math.min(1,b)); let k=.18+.45*b; return `rgb(${(10+k*30)|0},${(12+k*34)|0},${(18+k*42)|0})`;};
 
-const F=[ // face presets: +Z,-Z,+X,-X,+Y,-Y
+const F=[ // +Z,-Z,+X,-X,+Y,-Y
   {n:V(0,0,1),u:V(0,1,0),r:V(1,0,0),ty:0,tp:0},
   {n:V(0,0,-1),u:V(0,1,0),r:V(-1,0,0),ty:Math.PI,tp:0},
-  {n:V(1,0,0),u:V(0,1,0),r:V(0,0,-1),ty:Math.PI/2,tp:0},
-  {n:V(-1,0,0),u:V(0,1,0),r:V(0,0,1),ty:-Math.PI/2,tp:0},
-  {n:V(0,1,0),u:V(0,0,-1),r:V(1,0,0),ty:0,tp:-Math.PI/2},
-  {n:V(0,-1,0),u:V(0,0,1),r:V(1,0,0),ty:0,tp:Math.PI/2}
+  {n:V(1,0,0),u:V(0,1,0),r:V(0,0,-1),ty:-Math.PI/2,tp:0},
+  {n:V(-1,0,0),u:V(0,1,0),r:V(0,0,1),ty:Math.PI/2,tp:0},
+  {n:V(0,1,0),u:V(0,0,-1),r:V(1,0,0),ty:0,tp:Math.PI/2},
+  {n:V(0,-1,0),u:V(0,0,1),r:V(1,0,0),ty:0,tp:-Math.PI/2}
 ];
 
-let lock=F[0], mode='start';
-let down=null,turn=null;
+const AF=[2,3,4,5,0,1];
+let spin=0,sy=0,sp=0,paused=0,pAt=0;
+const near=(t,c)=>t+Math.round((c-t)/(Math.PI*2))*(Math.PI*2);
+function spinToSide(n){
+  if(paused||turn) return; spin=0;
+  let fi=SF.indexOf(n); if(fi<0) return;
+  let face=F[AF[fi]];
+  lock=null; mode='rotate'; sup=1; spin=1;
+  sp=face.tp; sy = Math.abs(sp)>1.4 ? Math.round(yaw/(Math.PI/2))*(Math.PI/2) : near(face.ty,yaw);
+}
+sides.forEach((el,i)=>el.onclick=()=>{if(paused||mode=='start') return; spinToSide(i+1);});
+
+let lock=F[(Math.random()*6)|0], mode='start';
+yaw=ty=lock.ty; pitch=tp=lock.tp;
+let down=null,turn=null,faceQuad=null,hiQuad=null,hi=null;
 let t0=0,tEnd=0,run=0,moves=0,solved=0,lastUi=0;
 
-// cubies: 27, each with position and 6 sticker colors (or -1)
 let cub=[];
-for(let xi=-1;xi<=1;xi++)for(let yi=-1;yi<=1;yi++)for(let zi=-1;zi<=1;zi++){
-  let c6=[-1,-1,-1,-1,-1,-1];
-  if(xi== 1)c6[0]=2; if(xi==-1)c6[1]=3;
-  if(yi== 1)c6[2]=1; if(yi==-1)c6[3]=5;
-  if(zi== 1)c6[4]=0; if(zi==-1)c6[5]=4;
-  cub.push({p:V(xi,yi,zi),c:c6});
-}
-
-function counts(){
-  let m=[0,0,0,0,0,0];
-  for(let q of cub)for(let ci of q.c) if(ci>=0) m[ci]++;
-  solved=m.every(v=>v==9);
-  return m;
-}
-
-function fmt(ms){
-  ms=Math.max(0,ms);
-  let s=ms/1000|0, m=(s/60)|0; s%=60;
-  let t=(ms%1000/100)|0;
-  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${t}`;
-}
-
-function ui(){
-  const now=performance.now();
-  const m=counts();
-  if(run&&solved&&!tEnd) tEnd=now;
-
-  timeEl.textContent=fmt(tEnd?(tEnd-t0):(run?(now-t0):0));
-  movesEl.textContent=moves;
-
-  countsEl.innerHTML='';
-  for(let i=0;i<6;i++){
-    let s=document.createElement('span');s.className='k';
-    s.innerHTML=`<span class=sw style="background:${HEX[i]}"></span><b>${LBL[i]} ${m[i]}/9</b>`;
-    countsEl.appendChild(s);
-  }
-  if(solved&&run){
-    hint.style.display='block';
-    hintT.textContent='Solved';
-    hintS.textContent=`${(nameEl.value||'Player')} — ${moves} moves — ${fmt(tEnd-t0)}`;
+function resetCube(){
+  cub=[];
+  for(let xi=-1;xi<=1;xi++)for(let yi=-1;yi<=1;yi++)for(let zi=-1;zi<=1;zi++){
+    let c6=[-1,-1,-1,-1,-1,-1];
+    if(xi== 1)c6[0]=2; if(xi==-1)c6[1]=3;
+    if(yi== 1)c6[2]=1; if(yi==-1)c6[3]=5;
+    if(zi== 1)c6[4]=0; if(zi==-1)c6[5]=4;
+    cub.push({p:V(xi,yi,zi),c:c6});
   }
 }
+resetCube();
 
-function lockTo(face){
-  lock=face; ty=face.ty; tp=face.tp;
-  mode='move';
-  hint.style.display='none';
-}
-function unlock(){
-  lock=null;
-  mode='rotate';
-  hint.style.display='none';
-}
-
-// Which slice axis we turn, and which layer (-1,0,1)
 const aCoord=(p,a)=>Math.round(dot(p,a));
-const rotLayer=(axis,layer,sgn)=>{ // apply 90° to positions + sticker normals
-  const t=sgn*Math.PI/2;
-  for(let q of cub) if(aCoord(q.p,axis)==layer){
-    q.p=V(Math.round(rotA(q.p,axis,t)[0]),Math.round(rotA(q.p,axis,t)[1]),Math.round(rotA(q.p,axis,t)[2]));
-    // rotate stickers by permuting faces (hardcoded by axis)
-    q.c=permC(q.c,axis,sgn);
-  }
-};
 function permC(c6,axis,sgn){
-  // faces index mapping: 0:+X 1:-X 2:+Y 3:-Y 4:+Z 5:-Z
-  let c=c6.slice();
-  const ax = axis[0]?0:axis[1]?1:2;
-  // cycles per axis (right-hand): axis X: (+Y)->(+Z)->(-Y)->(-Z); axis Y: (+Z)->(+X)->(-Z)->(-X); axis Z: (+X)->(+Y)->(-X)->(-Y)
-  const cyc = ax==0 ? [2,4,3,5] : ax==1 ? [4,0,5,1] : [0,2,1,3];
-  const k = sgn>0?1:3; // quarter turns
+  let c=c6.slice(),ax=axis[0]?0:axis[1]?1:2,sg=axis[ax]<0?-sgn:sgn;
+  const cyc=ax==0?[2,4,3,5]:ax==1?[4,0,5,1]:[0,2,1,3];
+  const k=sg>0?1:3;
   for(let i=0;i<4;i++) c[cyc[(i+k)&3]]=c6[cyc[i]];
   return c;
 }
-
-function startTurn(axis,layer,tgt){
-  if(turn) return;
-  turn={a:axis,layer,ang:0,tgt:tgt};
+function rotLayer(axis,layer,sgn){
+  const t=sgn*Math.PI/2;
+  for(let q of cub) if(aCoord(q.p,axis)==layer){
+    q.p=V(Math.round(rotA(q.p,axis,t)[0]),Math.round(rotA(q.p,axis,t)[1]),Math.round(rotA(q.p,axis,t)[2]));
+    q.c=permC(q.c,axis,sgn);
+  }
 }
+const AX=[V(1,0,0),V(0,1,0),V(0,0,1)];
+function shuffle(n=24){for(let i=0;i<n;i++){let a=AX[(Math.random()*3)|0],layer=[-1,0,1][(Math.random()*3)|0],sgn=Math.random()<.5?-1:1;rotLayer(a,layer,sgn);}tEnd=0;solved=0;moves=0;if(run)t0=performance.now();hint.style.display='none';ui();}
+
+function newGame(sh=1){
+  if(turn) return;
+  resetCube(); run=1; t0=performance.now(); tEnd=0; moves=0; solved=0; sup=0; lock=null; mode='rotate';
+  // random starting face / view
+  let f0=F[(Math.random()*6)|0]; yaw=ty=f0.ty; pitch=tp=f0.tp;
+  sh&&shuffle(24);
+  hint.style.display='none'; ui();
+}
+function startOver(){
+  if(turn) return;
+  resetCube(); moves=0; tEnd=0; solved=0; if(!run){run=1;} t0=performance.now(); lock=null; mode='rotate'; sup=1;
+  hint.style.display='none'; ui();
+}
+
+
+function startTurn(axis,layer,tgt){ if(!turn) turn={a:axis,layer,ang:0,tgt:tgt}; }
 function commitTurn(){
   if(!turn) return;
-  // snap to nearest quarter
   let sgn=turn.tgt>0?1:-1;
   rotLayer(turn.a,turn.layer,sgn);
-  turn=null;
-  moves++;
-  ui();
+  turn=null; moves++; ui();
 }
 
-// map 2D point to (u,v) on locked face
-function uvOf(px,py){
-  if(!lock||!faceQuad) return null;
-  const [A,B,C,D]=faceQuad; // quad in screen space
-  // bilinear-ish using basis from A
-  const vx=B[0]-A[0], vy=B[1]-A[1], wx=D[0]-A[0], wy=D[1]-A[1];
-  const dx=px-A[0], dy=py-A[1];
-  const det=vx*wy-vy*wx; if(Math.abs(det)<1e-6) return null;
+function stats(){
+  let fc=[0,0,0,0,0,0].map(()=>[0,0,0,0,0,0]);
+  for(let q of cub)for(let fi=0;fi<6;fi++){
+    let ci=q.c[fi]; if(ci<0) continue;
+    let p=q.p; if(fi==0?p[0]!=1:fi==1?p[0]!=-1:fi==2?p[1]!=1:fi==3?p[1]!=-1:fi==4?p[2]!=1:p[2]!=-1) continue;
+    fc[fi][ci]++;
+  }
+  let dom=[],ok=1;
+  for(let ci=0;ci<6;ci++){
+    let best=0,bi=0;
+    for(let fi=0;fi<6;fi++){ let v=fc[fi][ci]; if(v>best){best=v;bi=fi;} }
+    dom[ci]=[best,bi];
+  }
+  for(let fi=0;fi<6;fi++){
+    let m=0; for(let ci=0;ci<6;ci++) if(fc[fi][ci]>m) m=fc[fi][ci];
+    if(m!=9){ ok=0; break; }
+  }
+  solved=ok;
+  return dom;
+}
+const fmt=ms=>{ms=Math.max(0,ms); let s=ms/1000|0,m=(s/60)|0; s%=60; let t=(ms%1000/100)|0;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${t}`; };
+
+function setSide(n){
+  if(n==curSide) return;
+  if(curSide>0) sides[curSide-1].classList.remove('on');
+  curSide=n; if(n>0) sides[n-1].classList.add('on');
+}
+
+function ui(){
+  const now=performance.now(), m=stats();
+  if(startBtn&&newBtn){
+    if(!run||mode=='start'){ startBtn.style.display=''; newBtn.style.display='none'; }
+    else if(tEnd|| (run&&solved&&moves)){ startBtn.style.display='none'; newBtn.style.display=''; }
+    else { startBtn.style.display='none'; newBtn.style.display='none'; }
+  }
+  if(run&&solved&&!tEnd&&moves){ tEnd=now; hint.style.display='block'; hintT.textContent='Solved'; hintS.textContent=`${(nameEl.value||'Player')} — ${moves} moves — ${fmt(tEnd-t0)}`; }
+  timeEl.textContent=fmt(tEnd?(tEnd-t0):(run?(now-t0):0));
+  movesEl.textContent=moves;
+  countsEl.innerHTML='';
+  for(let i=0;i<6;i++){
+    let d=document.createElement('div'); d.className='cc'; d.style.background=BG(i);
+    d.innerHTML=`<div>${m[i][0]}/9</div><div class=s>S${SF[m[i][1]]}</div>`;
+    countsEl.appendChild(d);
+  }
+}
+function setPaused(v){
+  if(paused==v) return;
+  if(v){ if(turn||!run||tEnd) return; paused=1; pAt=performance.now(); down=null; pauseBox.style.display='block'; }
+  else{ if(!paused) return; let now=performance.now(); if(run&&!tEnd) t0+=now-pAt; paused=0; pauseBox.style.display='none'; lastUi=0; ui(); }
+}
+
+function lockTo(face){let p=face.tp;lock=face;tp=p;ty=(Math.abs(p)>1.4?Math.round(yaw/(Math.PI/2))*(Math.PI/2):face.ty);mode='move'; spin=0;}
+function unlock(){ lock=null; mode='rotate'; sup=1; } // suppress immediate re-lock while still square-on
+
+function uvQ(px,py,Q){
+  if(!Q) return null;
+  const [A,B,C,D]=Q, vx=B[0]-A[0], vy=B[1]-A[1], wx=D[0]-A[0], wy=D[1]-A[1];
+  const dx=px-A[0], dy=py-A[1], det=vx*wy-vy*wx; if(Math.abs(det)<1e-6) return null;
   let u=(dx*wy-dy*wx)/det, v=(dy*vx-dx*vy)/det;
   if(u<0||u>1||v<0||v>1) return null;
   return [u,v];
 }
-
+function uvOf(px,py){ return uvQ(px,py,faceQuad); }
 function bestDir(rep,axis,sgn,dx,dy){
-  // simulate small gesture -> choose direction (+/- quarter) matching screen motion
-  const t=sgn*Math.PI/2;
-  const p2=rotA(rep,axis,t);
-  const a=proj(rep), b=proj(p2);
-  const vx=b[0]-a[0], vy=b[1]-a[1];
-  return (vx*dx+vy*dy);
+  const t=sgn*Math.PI/2, p2=rotA(rep,axis,t), a=proj(rep), b=proj(p2);
+  return (b[0]-a[0])*dx + (b[1]-a[1])*dy;
 }
 
 c.addEventListener('pointerdown',e=>{
+  if(paused) return;
   c.setPointerCapture(e.pointerId);
-  const px=e.clientX, py=e.clientY;
-  if(mode=='start'){
-    run=1; t0=performance.now(); tEnd=0; moves=0; solved=0; lastUi=0;
-    mode='rotate'; unlock();
-    hint.style.display='none';
-    ui();
-    return;
-  }
+  const px=e.clientX,py=e.clientY;
+  if(mode=='start'){ newGame(1); return; }
   if(turn) return;
-
-  if(mode=='move' && lock){
+  if(mode=='move'&&lock){
     const uv=uvOf(px,py);
-    if(!uv){ // tap outside: unlock
-      unlock(); return;
-    }
-    down={px,py,uv, moved:0};
-    return;
+    if(!uv){ unlock(); return; }
+    down={px,py,uv,moved:0}; return;
   }
-
-  // rotate mode
-  down={px,py, ry:yaw, rp:pitch};
+  const hv=(!sup&&hiQuad)?uvQ(px,py,hiQuad):null;
+  down={px,py, ry:yaw, rp:pitch, hi:!!hv, hf:hi, moved:0};
 },{passive:1});
 
 c.addEventListener('pointermove',e=>{
-  if(!down||turn) return;
-  const px=e.clientX, py=e.clientY, dx=px-down.px, dy=py-down.py;
-
+  if(paused||!down||turn) return;
+  const px=e.clientX,py=e.clientY,dx=px-down.px,dy=py-down.py;
   if(mode=='rotate'){
+    const L=10;
+    if(down.hi && !down.moved && (dx*dx+dy*dy)<L*L) return; // tap-to-lock shouldn't nudge rotation
+    down.moved=1;
     yaw = down.ry + dx*0.006;
-    pitch = Math.max(-1.35,Math.min(1.35, down.rp + dy*0.006));
+    pitch = Math.max(-1.55,Math.min(1.55, down.rp + dy*0.006));
     return;
   }
-
-  if(mode=='move' && lock){
-    const L=12;
-    if(!down.moved && (dx*dx+dy*dy)<L*L) return;
-
-    // decide move: row/col vs face twist
+  if(mode=='move'&&lock){
+    const L=12; if(!down.moved && (dx*dx+dy*dy)<L*L) return;
     down.moved=1;
-    const u=down.uv[0], v=down.uv[1];
-    const col=(u*3)|0, row=(v*3)|0;
-    const ax=Math.abs(dx), ay=Math.abs(dy);
-
-    // layer index for row/col on locked face
+    const u=down.uv[0], v=down.uv[1], col=(u*3)|0, row=(v*3)|0;
     const n=lock.n, r=lock.r, uA=lock.u;
-
-    // pick axis+layer based on gesture
-    let axis, layer, sgn=1;
-    if(Math.abs(ax-ay)<18){ // diagonal => twist face
+    let P=mul(n,1),A=proj(P),R=proj(add(P,r)),U=proj(add(P,uA));
+    let rx=R[0]-A[0],ry=R[1]-A[1],ux=U[0]-A[0],uy=U[1]-A[1];
+    let cr=(dx*rx+dy*ry)/(Math.hypot(rx,ry)||1),cu=(dx*ux+dy*uy)/(Math.hypot(ux,uy)||1);
+    let ar=Math.abs(cr),au=Math.abs(cu),axis,layer,sgn=1,diag=Math.min(ar,au)/(Math.max(ar,au)+1e-9);
+    if(row==1&&col==1&&diag>.72){
       axis=n; layer=1;
-      // direction: choose best of +/- based on projected motion around axis using a rep point on face
       const rep=add(mul(n,1),add(mul(r,0.7),mul(uA,0.7)));
       sgn = bestDir(rep,axis,1,dx,dy)>bestDir(rep,axis,-1,dx,dy) ? 1 : -1;
-    }else if(ax>ay){
-      axis=uA; // horizontal drag -> rotate around face-u axis => affects columns
-      // column coordinate: -1,0,1 along r
-      const cc=[-1,0,1][col];
-      layer=cc;
-      // direction choose
-      const rep=add(mul(n,1),add(mul(r,cc),mul(uA,0.7)));
+    }else if(ar>au){
+      axis=uA; const rr=[1,0,-1][row]; layer=rr;
+      const rep=add(mul(n,1),add(mul(r,0.7),mul(uA,rr)));
       sgn = bestDir(rep,axis,1,dx,dy)>bestDir(rep,axis,-1,dx,dy) ? 1 : -1;
     }else{
-      axis=r; // vertical drag -> rotate around r axis => affects rows
-      const rr=[1,0,-1][row];
-      layer=rr;
-      const rep=add(mul(n,1),add(mul(r,0.7),mul(uA,rr)));
+      axis=r; const cc=[-1,0,1][col]; layer=cc;
+      const rep=add(mul(n,1),add(mul(r,cc),mul(uA,0.7)));
       sgn = bestDir(rep,axis,1,dx,dy)>bestDir(rep,axis,-1,dx,dy) ? 1 : -1;
     }
     startTurn(axis,layer,sgn*Math.PI/2);
@@ -285,86 +298,106 @@ c.addEventListener('pointermove',e=>{
 },{passive:1});
 
 c.addEventListener('pointerup',e=>{
-  if(!down){return;}
-  if(mode=='move' && lock && !turn){
-    // tap to unlock if no move
-    if(!down.moved){ unlock(); }
-  }
+  if(paused){down=null; return;}
+  if(!down) return;
+  if(mode=='rotate' && !turn && down.hi && !down.moved && down.hf){ lockTo(down.hf); }
+  else if(mode=='move'&&lock&&!turn && !down.moved) unlock();
   down=null;
 },{passive:1});
 
-document.getElementById('save').onclick=()=>{
-  // export current canvas + overlay card as png (no libs)
-  const ow=1200, oh=900;
-  const oc=document.createElement('canvas'); oc.width=ow; oc.height=oh;
-  const og=oc.getContext('2d');
+document.getElementById('shuf').onclick=()=>{if(paused||turn) return; shuffle(24);};
 
-  // background
+document.getElementById('redo').onclick=()=>{if(paused||turn) return; startOver();};
+pauseBtn&&(pauseBtn.onclick=()=>setPaused(!paused)); resBtn&&(resBtn.onclick=()=>setPaused(0));
+
+
+startBtn&& (startBtn.onclick=()=>{if(paused||turn) return; newGame(1);});
+newBtn&& (newBtn.onclick=()=>{if(paused||turn) return; newGame(1);});
+document.getElementById('new')&&(document.getElementById('new').onclick=()=>newGame(1));
+document.getElementById('save').onclick=()=>{
+  const ow=1200,oh=900,oc=document.createElement('canvas'); oc.width=ow; oc.height=oh;
+  const og=oc.getContext('2d');
   const g=og.createRadialGradient(ow*.35,oh*.25,50,ow*.5,oh*.5,oh*.8);
   g.addColorStop(0,'#0c1330'); g.addColorStop(1,'#050812');
   og.fillStyle=g; og.fillRect(0,0,ow,oh);
-
-  // draw cube from main canvas scaled
   og.globalAlpha=.92;
-  const sc=Math.min(ow/c.width,oh/c.height)*.92, dw=c.width*sc, dh=c.height*sc;
+  const sc=Math.min(ow/c.width,oh/c.height)*.92,dw=c.width*sc,dh=c.height*sc;
   og.drawImage(c,0,0,c.width,c.height,(ow-dw)/2,(oh-dh)/2,dw,dh);
-
-  // info panel
-  og.globalAlpha=1;
-  og.fillStyle='rgba(8,12,26,.78)';
-  og.strokeStyle='rgba(140,160,255,.35)';
-  og.lineWidth=2;
-  const px=28, py=28, pw=ow-56, ph=118, r=18;
-  og.beginPath();
-  og.moveTo(px+r,py);
-  og.arcTo(px+pw,py,px+pw,py+ph,r);
-  og.arcTo(px+pw,py+ph,px,py+ph,r);
-  og.arcTo(px,py+ph,px,py,r);
-  og.arcTo(px,py,px+pw,py,r);
-  og.closePath(); og.fill(); og.stroke();
-  og.fillStyle='#e8ecff';
-  og.font='700 22px system-ui,Segoe UI,Roboto,Arial';
-  const nm=(nameEl.value||'Player');
-  const ms=tEnd?(tEnd-t0):(run?performance.now()-t0:0);
+  og.globalAlpha=1; og.fillStyle='rgba(8,12,26,.78)'; og.strokeStyle='rgba(140,160,255,.35)'; og.lineWidth=2;
+  const px=28,py=28,pw=ow-56,ph=118,r=18;
+  og.beginPath(); og.moveTo(px+r,py); og.arcTo(px+pw,py,px+pw,py+ph,r); og.arcTo(px+pw,py+ph,px,py+ph,r);
+  og.arcTo(px,py+ph,px,py,r); og.arcTo(px,py,px+pw,py,r); og.closePath(); og.fill(); og.stroke();
+  og.fillStyle='#e8ecff'; og.font='700 22px system-ui,Segoe UI,Roboto,Arial';
+  const nm=(nameEl.value||'Player'),ms=tEnd?(tEnd-t0):(run?performance.now()-t0:0);
   og.fillText(`${nm}`,px+18,py+36);
-  og.font='600 14px system-ui,Segoe UI,Roboto,Arial';
-  og.fillStyle='rgba(232,236,255,.88)';
+  og.font='600 14px system-ui,Segoe UI,Roboto,Arial'; og.fillStyle='rgba(232,236,255,.88)';
   og.fillText(`Time: ${fmt(ms)}    Moves: ${moves}`,px+18,py+62);
-
-  // color counts
-  const m=counts();
-  let cx=px+18, cy=py+86;
-  og.font='700 12px system-ui,Segoe UI,Roboto,Arial';
-  for(let i=0;i<6;i++){
-    og.fillStyle=HEX[i];
-    og.fillRect(cx,cy-10,10,10);
-    og.fillStyle='rgba(232,236,255,.88)';
-    og.fillText(`${LBL[i]} ${m[i]}/9`,cx+16,cy-1);
-    cx+=86;
-  }
-
-  const a=document.createElement('a');
-  a.download=`rubik_${nm.replace(/\\W+/g,'_')||'player'}.png`;
-  a.href=oc.toDataURL('image/png');
-  a.click();
+  const m=stats(); let cx=px+18,cy=py+86; og.font='700 12px system-ui,Segoe UI,Roboto,Arial';
+  for(let i=0;i<6;i++){ og.fillStyle=HEX[i]; og.fillRect(cx,cy-10,10,10); og.fillStyle='rgba(232,236,255,.88)'; og.fillText(`${m[i][0]}/9 · S${SF[m[i][1]]}`,cx+16,cy-1); cx+=86; }
+  const a=document.createElement('a'); a.download=`rubik_${nm.replace(/\W+/g,'_')||'player'}.png`; a.href=oc.toDataURL('image/png'); a.click();
 };
 
 // draw loop
 function draw(){
   x.clearRect(0,0,W,H);
 
-  // ease to lock angles
-  if(lock){ yaw+=(ty-yaw)*.22; pitch+=(tp-pitch)*.22; }
+  // soft ground shadow
+  let sh=H/2+Math.min(W,H)*0.18, sw=Math.min(W,H)*0.28;
+  let g=x.createRadialGradient(W/2,sh,sw*0.1,W/2,sh,sw);
+  g.addColorStop(0,'rgba(0,0,0,.55)'); g.addColorStop(1,'rgba(0,0,0,0)');
+  x.fillStyle=g; x.beginPath(); x.ellipse(W/2,sh,sw*1.15,sw*0.52,0,0,Math.PI*2); x.fill();
 
-  // cube render
+  if(!paused&&(lock||spin)){let yy=spin?sy:ty,pp=spin?sp:tp,TA=Math.PI*2,d=yy-yaw;d=(d+Math.PI)%TA;if(d<0)d+=TA;yaw+=(d-Math.PI)*.22;d=pp-pitch;d=(d+Math.PI)%TA;if(d<0)d+=TA;pitch+=(d-Math.PI)*.22;if(spin&&Math.abs(yy-yaw)+Math.abs(pp-pitch)<1e-3){yaw=yy;pitch=pp;spin=0;}}
+
+  const axes=[V(1,0,0),V(-1,0,0),V(0,1,0),V(0,-1,0),V(0,0,1),V(0,0,-1)];
+  let best=-1,bi=0;
+  for(let i=0;i<6;i++){ let v=cam(axes[i]),z=v[2]/Math.hypot(v[0],v[1],v[2]); if(z>best){best=z;bi=i;} }
+  setSide(SF[bi]);
+  if(mode=='rotate' && sup && best<.97) sup=0;
+
+  // keep side numbers just above cube
+  {
+    const E=1.48; let my=1e9;
+    for(let sx=-1;sx<=1;sx+=2)for(let sy=-1;sy<=1;sy+=2)for(let sz=-1;sz<=1;sz+=2){
+      let P=proj(V(sx*E,sy*E,sz*E)); if(P[1]<my) my=P[1];
+    }
+    sidesBox.style.top=(Math.max(8,my-38))+'px';
+  }
+
   const light=V(.7,.9,1.2);
+
+  // inner hull (blocks see-through gaps)
+  {
+    const Eh=1.38; let Hq=[];
+    for(let fi=0;fi<6;fi++){
+      let n0=fi==0?V(1,0,0):fi==1?V(-1,0,0):fi==2?V(0,1,0):fi==3?V(0,-1,0):fi==4?V(0,0,1):V(0,0,-1);
+      let u0=fi<2?V(0,1,0):fi<4?V(1,0,0):V(1,0,0);
+      let v0=fi<2?V(0,0,1):fi<4?V(0,0,1):V(0,1,0);
+      if(fi==1) v0=V(0,0,-1); if(fi==3) v0=V(0,0,-1); if(fi==5) v0=V(0,-1,0);
+      let fc0=mul(n0,Eh), U=mul(u0,Eh), Vv=mul(v0,Eh);
+      let a=add(fc0,add(U,Vv)), b=add(fc0,sub(U,Vv)), c1=add(fc0,add(mul(U,-1),mul(Vv,-1))), d=add(fc0,add(mul(U,-1),Vv));
+      let A=proj(a),B=proj(b),C=proj(c1),D=proj(d);
+      let z=(A[2]+B[2]+C[2]+D[2])*.25;
+      let nv=cam(n0);
+      let bn=Math.abs(dot(nv,light))/(Math.hypot(nv[0],nv[1],nv[2])*Math.hypot(light[0],light[1],light[2]));
+      bn=.18+.22*bn;
+      Hq.push({p:[[A[0],A[1]],[B[0],B[1]],[C[0],C[1]],[D[0],D[1]]],z,bn});
+    }
+    Hq.sort((a,b)=>b.z-a.z);
+    for(let q of Hq){
+      x.beginPath();
+      x.moveTo(q.p[0][0],q.p[0][1]);
+      for(let i=1;i<4;i++) x.lineTo(q.p[i][0],q.p[i][1]);
+      x.closePath();
+      x.fillStyle=`rgba(10,14,28,${.75+.25*q.bn})`;
+      x.fill();
+    }
+  }
+
   let quads=[];
-
-  const h=0.46, ins=0.08; // cubie half + sticker inset
+  const h=0.48, ins=0.095, pad=0.012;
   for(let q of cub){
-    let p=q.p, inTurn=turn&&aCoord(p,turn.a)==turn.layer;
-    let ang=inTurn?turn.ang:0;
-
+    let p=q.p, inTurn=turn&&aCoord(p,turn.a)==turn.layer, ang=inTurn?turn.ang:0;
     for(let fi=0;fi<6;fi++){
       let ci=q.c[fi]; if(ci<0) continue;
       let n0=fi==0?V(1,0,0):fi==1?V(-1,0,0):fi==2?V(0,1,0):fi==3?V(0,-1,0):fi==4?V(0,0,1):V(0,0,-1);
@@ -374,97 +407,76 @@ function draw(){
       if(fi==3) v0=V(0,0,-1);
       if(fi==5) v0=V(0,-1,0);
 
-      let s=h-ins, o=h;
+      let o=h, sP=h-pad, sS=h-ins;
       let fc0=add(p,mul(n0,o));
-      let u=mul(u0,s), v=mul(v0,s);
-      let a=add(fc0,add(u,v));
-      let b=add(fc0,sub(u,v));
-      let c1=add(fc0,add(mul(u,-1),mul(v,-1)));
-      let d=add(fc0,add(mul(u,-1),v));
+      let U=mul(u0,sP), Vv=mul(v0,sP), Us=mul(u0,sS), Vs=mul(v0,sS);
 
-      if(inTurn){ a=rotA(a,turn.a,ang); b=rotA(b,turn.a,ang); c1=rotA(c1,turn.a,ang); d=rotA(d,turn.a,ang); n0=rotA(n0,turn.a,ang); }
+      let ap=add(fc0,add(U,Vv)), bp=add(fc0,sub(U,Vv)), cp=add(fc0,add(mul(U,-1),mul(Vv,-1))), dp=add(fc0,add(mul(U,-1),Vv));
+      let as=add(fc0,add(Us,Vs)), bs=add(fc0,sub(Us,Vs)), cs=add(fc0,add(mul(Us,-1),mul(Vs,-1))), ds=add(fc0,add(mul(Us,-1),Vs));
 
-      let A=proj(a),B=proj(b),C=proj(c1),D=proj(d);
-      let z=(A[2]+B[2]+C[2]+D[2])/4;
+      if(inTurn){
+        ap=rotA(ap,turn.a,ang); bp=rotA(bp,turn.a,ang); cp=rotA(cp,turn.a,ang); dp=rotA(dp,turn.a,ang);
+        as=rotA(as,turn.a,ang); bs=rotA(bs,turn.a,ang); cs=rotA(cs,turn.a,ang); ds=rotA(ds,turn.a,ang);
+        n0=rotA(n0,turn.a,ang);
+      }
 
-      // backface cull
       let nv=cam(n0); if(nv[2]<=0) continue;
+      let bn=dot(nv,light)/(Math.hypot(nv[0],nv[1],nv[2])*Math.hypot(light[0],light[1],light[2]));
+      bn=.45+.55*Math.max(0,bn);
 
-      // brightness
-      let bn=dot(nv,light)/Math.hypot(...nv)/Math.hypot(...light);
-      bn=.55+.45*Math.max(0,bn);
+      let AP=proj(ap),BP=proj(bp),CP=proj(cp),DP=proj(dp);
+      let AS=proj(as),BS=proj(bs),CS=proj(cs),DS=proj(ds);
+      let z=(AP[2]+BP[2]+CP[2]+DP[2])*.25;
 
-      quads.push({p:[A,B,C,D],z,ci,bn});
+      quads.push({pl:[[AP[0],AP[1]],[BP[0],BP[1]],[CP[0],CP[1]],[DP[0],DP[1]]],
+                  st:[[AS[0],AS[1]],[BS[0],BS[1]],[CS[0],CS[1]],[DS[0],DS[1]]],z,ci,bn});
     }
   }
-
   quads.sort((a,b)=>b.z-a.z);
 
-  // draw plastic body edges (subtle)
   x.lineJoin='round';
   for(let q of quads){
-    x.beginPath();
-    x.moveTo(q.p[0][0],q.p[0][1]);
-    for(let i=1;i<4;i++) x.lineTo(q.p[i][0],q.p[i][1]);
-    x.closePath();
-    x.fillStyle=shade(q.ci,q.bn);
-    x.fill();
-    x.strokeStyle='rgba(0,0,0,.35)';
-    x.lineWidth=1.5;
-    x.stroke();
-    x.strokeStyle='rgba(255,255,255,.08)';
-    x.lineWidth=1;
-    x.stroke();
+    x.beginPath(); x.moveTo(q.pl[0][0],q.pl[0][1]); x.lineTo(q.pl[1][0],q.pl[1][1]); x.lineTo(q.pl[2][0],q.pl[2][1]); x.lineTo(q.pl[3][0],q.pl[3][1]); x.closePath();
+    x.fillStyle=pshade(q.bn); x.fill();
+    x.strokeStyle='rgba(0,0,0,.55)'; x.lineWidth=2.2; x.stroke();
+
+    x.beginPath(); x.moveTo(q.st[0][0],q.st[0][1]); x.lineTo(q.st[1][0],q.st[1][1]); x.lineTo(q.st[2][0],q.st[2][1]); x.lineTo(q.st[3][0],q.st[3][1]); x.closePath();
+    if(q.ci==FX.lin||q.ci==FX.rad){let Q=q.st,g;if(q.ci==FX.lin){g=x.createLinearGradient(Q[0][0],Q[0][1],Q[2][0],Q[2][1]);g.addColorStop(0,HEX[q.ci]);g.addColorStop(.5,HEX[4]);g.addColorStop(1,HEX[0]);}else{let cx=(Q[0][0]+Q[2][0])*.5,cy=(Q[0][1]+Q[2][1])*.5,r=Math.hypot(Q[0][0]-cx,Q[0][1]-cy);g=x.createRadialGradient(cx,cy,1,cx,cy,r);g.addColorStop(0,HEX[q.ci]);g.addColorStop(1,HEX[5]);}x.fillStyle=g;x.fill();x.fillStyle=`rgba(0,0,0,${(1-q.bn)*.33})`;x.fill();}else{x.fillStyle=shade(q.ci,q.bn);x.fill();}
+    x.strokeStyle='rgba(255,255,255,.10)'; x.lineWidth=1.2; x.stroke();
+    x.strokeStyle='rgba(0,0,0,.28)'; x.lineWidth=1; x.stroke();
   }
 
-  // highlight locked face border
-  faceQuad=null;
-  if(lock){
-    const e=1.52;
-    const n=lock.n,r=lock.r,u=lock.u;
+  faceQuad=null; hiQuad=null; hi=null;
+  if(!lock && !sup && best>.985) hi=F[[2,3,4,5,0,1][bi]];
+  const HL=hf=>{
+    const e=1.52,n=hf.n,r=hf.r,u=hf.u;
     const P1=proj(add(mul(n,e),add(mul(u,e),mul(r,-e))));
     const P2=proj(add(mul(n,e),add(mul(u,e),mul(r, e))));
     const P3=proj(add(mul(n,e),add(mul(u,-e),mul(r, e))));
     const P4=proj(add(mul(n,e),add(mul(u,-e),mul(r,-e))));
-    faceQuad=[[P1[0],P1[1]],[P2[0],P2[1]],[P3[0],P3[1]],[P4[0],P4[1]]];
-    x.beginPath();
-    x.moveTo(P1[0],P1[1]); x.lineTo(P2[0],P2[1]); x.lineTo(P3[0],P3[1]); x.lineTo(P4[0],P4[1]); x.closePath();
-    x.strokeStyle='rgba(140,180,255,.85)';
-    x.lineWidth=3.5;
-    x.stroke();
-    x.strokeStyle='rgba(255,255,255,.25)';
-    x.lineWidth=1.5;
-    x.stroke();
+    return [[P1[0],P1[1]],[P2[0],P2[1]],[P3[0],P3[1]],[P4[0],P4[1]]];
+  };
+  if(lock){
+    const Q=HL(lock); faceQuad=Q;
+    x.beginPath(); x.moveTo(Q[0][0],Q[0][1]); x.lineTo(Q[1][0],Q[1][1]); x.lineTo(Q[2][0],Q[2][1]); x.lineTo(Q[3][0],Q[3][1]); x.closePath();
+    x.strokeStyle='rgba(140,180,255,.92)'; x.lineWidth=3.7; x.stroke();
+    x.strokeStyle='rgba(255,255,255,.28)'; x.lineWidth=1.6; x.stroke();
+  }else if(hi){
+    const Q=HL(hi); hiQuad=Q;
+    x.beginPath(); x.moveTo(Q[0][0],Q[0][1]); x.lineTo(Q[1][0],Q[1][1]); x.lineTo(Q[2][0],Q[2][1]); x.lineTo(Q[3][0],Q[3][1]); x.closePath();
+    x.strokeStyle='rgba(140,180,255,.65)'; x.lineWidth=3.2; x.stroke();
+    x.strokeStyle='rgba(255,255,255,.18)'; x.lineWidth=1.4; x.stroke();
   }
 
-  // auto-lock when facing near square-on (during rotate mode)
-  if(mode=='rotate'&&!turn&&!down){
-    const axes=[V(1,0,0),V(-1,0,0),V(0,1,0),V(0,-1,0),V(0,0,1),V(0,0,-1)];
-    let best=-1, bestI=0;
-    for(let i=0;i<6;i++){
-      let v=cam(axes[i]);
-      let z=v[2]/Math.hypot(...v);
-      if(z>best){best=z;bestI=i;}
-    }
-    if(best>.985){
-      const bi=bestI;
-      lockTo(F[[2,3,4,5,0,1][bi]]); // map axis index to preset
-    }
+
+  if(!paused&&turn){
+    turn.ang += (turn.tgt-turn.ang)*.22;
+    if(Math.abs(turn.tgt-turn.ang)<1e-3){ turn.ang=turn.tgt; commitTurn(); }
   }
 
-  if(turn){
-    let sp=.22;
-    turn.ang += (turn.tgt-turn.ang)*sp;
-    if(Math.abs(turn.tgt-turn.ang)<1e-3){turn.ang=turn.tgt; commitTurn();}
-  }
-
-  // timer tick (avoid heavy DOM updates)
   const now=performance.now();
-  if(run&&!tEnd&&now-lastUi>250){timeEl.textContent=fmt(now-t0); lastUi=now;}
-
+  if(run&&!tEnd&&!paused&&now-lastUi>250){ timeEl.textContent=fmt(now-t0); lastUi=now; }
   requestAnimationFrame(draw);
 }
-ui();
-requestAnimationFrame(draw);
+ui(); requestAnimationFrame(draw);
 </script></body></html>
-
