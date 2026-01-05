@@ -10,19 +10,17 @@ html,body{margin:0;height:100%;background:#070a12;overflow:hidden;font-family:sy
 #ui .k{display:flex;gap:8px;align-items:center;font-size:12px;opacity:.95}
 .sw{width:10px;height:10px;border-radius:3px;box-shadow:0 0 0 1px rgba(255,255,255,.18),0 6px 16px rgba(0,0,0,.5) inset}
 .btn{cursor:pointer;background:linear-gradient(180deg,rgba(110,140,255,.35),rgba(70,90,190,.18));border:1px solid rgba(140,160,255,.28);color:#e8ecff;border-radius:10px;padding:8px 10px;font-weight:700}
-.btn:active{transform:translateY(1px)}@media (orientation:landscape) and (min-width:900px){#ui{left:auto;right:16px;top:50%;transform:translateY(-50%)}#ui .panel{min-width:320px;max-width:440px;width:min(440px,38vw)}#ui .row:not(#counts){flex-direction:column;align-items:stretch}
-#ui input{width:100%}#ui .btn{width:100%}#ui .pbtn{width:auto}#ui .k{justify-content:space-between}#ui #counts{flex-direction:row;align-items:center;flex-wrap:nowrap;justify-content:space-between}
-}
+.btn:active{transform:translateY(1px)}@media (orientation:landscape) and (min-width:900px){#ui{left:auto;right:16px;top:50%;transform:translateY(-50%)}#ui .panel{min-width:320px;max-width:440px;width:min(440px,38vw)}#ui .row:not(#counts){flex-direction:column;align-items:stretch}#ui input{width:100%}#ui .btn{width:100%}#ui .pbtn{width:auto}#ui .k{justify-content:space-between}#ui #counts{flex-direction:row;align-items:center;flex-wrap:nowrap;justify-content:space-between}}
 
 #sides{position:fixed;left:50%;top:12px;transform:translateX(-50%);display:flex;gap:10px;pointer-events:none;z-index:4}
 #sides span{width:26px;height:26px;border-radius:10px;display:grid;place-items:center;font-weight:800;font-size:12px;letter-spacing:.2px;
 background:rgba(255,255,255,.05);border:1px solid rgba(140,160,255,.18);box-shadow:0 10px 26px rgba(0,0,0,.35);pointer-events:auto;cursor:pointer}
 #sides .on{background:rgba(110,140,255,.28);border-color:rgba(170,190,255,.45);box-shadow:0 12px 34px rgba(90,120,255,.22),0 10px 26px rgba(0,0,0,.35)}
-#hint,#pause{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;z-index:6}
-#pause{z-index:7;display:none}
-#hint .box,#pause .box{display:inline-block;max-width:min(520px,92vw);backdrop-filter:blur(10px);background:rgba(8,12,26,.78);border:1px solid rgba(140,160,255,.3);border-radius:18px;padding:14px 16px;box-shadow:0 14px 60px rgba(0,0,0,.55);pointer-events:auto}
-#hint h1,#pause h1{margin:0 0 6px;font-size:18px;letter-spacing:.2px}
-#hint p,#pause p{margin:0;font-size:13px;opacity:.9;line-height:1.35}
+#hint,#pause,#savePick{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;z-index:6}
+#pause{z-index:7;display:none}#savePick{z-index:8;display:none}
+#hint .box,#pause .box,#savePick .box{display:inline-block;max-width:min(520px,92vw);backdrop-filter:blur(10px);background:rgba(8,12,26,.78);border:1px solid rgba(140,160,255,.3);border-radius:18px;padding:14px 16px;box-shadow:0 14px 60px rgba(0,0,0,.55);pointer-events:auto}
+#hint h1,#pause h1,#savePick h1{margin:0 0 6px;font-size:18px;letter-spacing:.2px}
+#hint p,#pause p,#savePick p{margin:0;font-size:13px;opacity:.9;line-height:1.35}
 .cc{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;text-align:center;font-weight:900;font-size:11px;line-height:1.05;color:rgba(7,10,18,.92);text-shadow:0 1px 0 rgba(255,255,255,.35),0 2px 10px rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.26);box-shadow:0 12px 30px rgba(0,0,0,.42),inset 0 10px 18px rgba(255,255,255,.22),inset 0 -14px 18px rgba(0,0,0,.35)}
 .cc .s{font-weight:800;font-size:10px;opacity:.95}
 .pbtn{padding:6px 8px;border-radius:10px}
@@ -34,7 +32,7 @@ background:rgba(255,255,255,.05);border:1px solid rgba(140,160,255,.18);box-shad
 <div id=ui><div class=panel>
   <div class=row style="margin-bottom:8px">
     <input id=name placeholder="Player name" value="Player">
-    <button class=btn id=save>Save PNG</button>
+    <button class=btn id=save>Save</button>
     <button class=btn id=shuf title="Shuffle">🔄</button>
     <button class=btn id=redo title="Start over">🧹</button>
   </div>
@@ -54,6 +52,8 @@ background:rgba(255,255,255,.05);border:1px solid rgba(140,160,255,.18);box-shad
   <h1>Paused</h1>
   <p>Timer and controls are paused.</p><div style="margin-top:10px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class=btn id=res>Resume</button></div>
 </div></div>
+
+<div id=savePick><div class=box><h1>Save</h1><p>Choose format.</p><div style="margin-top:10px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class=btn id=sStat>Stats</button><button class=btn id=sCub>Cubix</button></div></div></div>
 
 <script>
 const c=document.getElementById('c'),x=c.getContext('2d');
@@ -314,7 +314,7 @@ pauseBtn&&(pauseBtn.onclick=()=>setPaused(!paused)); resBtn&&(resBtn.onclick=()=
 startBtn&& (startBtn.onclick=()=>{if(paused||turn) return; newGame(1);});
 newBtn&& (newBtn.onclick=()=>{if(paused||turn) return; newGame(1);});
 document.getElementById('new')&&(document.getElementById('new').onclick=()=>newGame(1));
-document.getElementById('save').onclick=()=>{
+function saveStats(){
   const ow=1200,oh=900,oc=document.createElement('canvas'); oc.width=ow; oc.height=oh;
   const og=oc.getContext('2d');
   const g=og.createRadialGradient(ow*.35,oh*.25,50,ow*.5,oh*.5,oh*.8);
@@ -335,7 +335,28 @@ document.getElementById('save').onclick=()=>{
   const m=stats(); let cx=px+18,cy=py+86; og.font='700 12px system-ui,Segoe UI,Roboto,Arial';
   for(let i=0;i<6;i++){ og.fillStyle=HEX[i]; og.fillRect(cx,cy-10,10,10); og.fillStyle='rgba(232,236,255,.88)'; og.fillText(`${m[i][0]}/9 · S${SF[m[i][1]]}`,cx+16,cy-1); cx+=86; }
   const a=document.createElement('a'); a.download=`rubik_${nm.replace(/\W+/g,'_')||'player'}.png`; a.href=oc.toDataURL('image/png'); a.click();
-};
+}
+function saveCubix(){
+  // crop current on-screen view to just the cube (no stats bar)
+  const E=1.58,pad=34;let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  for(let sx=-1;sx<=1;sx+=2)for(let sy=-1;sy<=1;sy+=2)for(let sz=-1;sz<=1;sz+=2){let P=proj(V(sx*E,sy*E,sz*E));x0=Math.min(x0,P[0]);y0=Math.min(y0,P[1]);x1=Math.max(x1,P[0]);y1=Math.max(y1,P[1]);}
+  x0=Math.max(0,x0-pad);y0=Math.max(0,y0-pad);x1=Math.min(W,x1+pad);y1=Math.min(H,y1+pad);
+  let sw=((x1-x0)*D)|0,sh=((y1-y0)*D)|0,sx=(x0*D)|0,sy=(y0*D)|0;
+  const MAX=1800,sc=Math.min(1,MAX/Math.max(sw,sh));
+  const oc=document.createElement('canvas'); oc.width=Math.max(1,(sw*sc)|0); oc.height=Math.max(1,(sh*sc)|0);
+  const og=oc.getContext('2d');
+  og.drawImage(c,sx,sy,sw,sh,0,0,oc.width,oc.height);
+  const nm=(nameEl.value||'Player');
+  const a=document.createElement('a'); a.download=`cubix_${nm.replace(/\W+/g,'_')||'player'}.png`; a.href=oc.toDataURL('image/png'); a.click();
+}
+
+const saveBtn=document.getElementById('save'),savePick=document.getElementById('savePick'),sStat=document.getElementById('sStat'),sCub=document.getElementById('sCub');
+const showSave=v=>{if(!savePick) return; savePick.style.display=v?'block':'none';};
+saveBtn&&(saveBtn.onclick=()=>showSave(!(savePick&&savePick.style.display=='block')));
+sStat&&(sStat.onclick=()=>{showSave(0); saveStats();});
+sCub&&(sCub.onclick=()=>{showSave(0); saveCubix();});
+addEventListener('keydown',e=>{if(e.key=='Escape') showSave(0);},{passive:1});
+document.addEventListener('pointerdown',e=>{if(!savePick||savePick.style.display!='block') return; if(e.target===saveBtn||e.target.closest('#savePick .box')) return; showSave(0);},true);
 
 // draw loop
 function draw(){
